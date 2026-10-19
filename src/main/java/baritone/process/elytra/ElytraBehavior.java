@@ -41,6 +41,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.inventory.ClickType;
@@ -791,10 +792,25 @@ public final class ElytraBehavior implements Helper {
                 return;
             }
             logVerbose("attempting to use firework" + (forceUseFirework ? " (forced)" : ""));
-            ctx.playerController().processRightClick(ctx.player(), ctx.world(), InteractionHand.MAIN_HAND);
-            this.minimumBoostTicks = 10 * (1 + getFireworkBoost(ctx.player().getItemInHand(InteractionHand.MAIN_HAND)).orElse(0));
-            this.remainingFireworkTicks = 10;
-            this.deployedFireworkLastTick = true;
+            InteractionHand hand = isFireworks(ctx.player().getMainHandItem())
+                    ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+            int boostTicks = 10 * (1 + getFireworkBoost(ctx.player().getItemInHand(hand)).orElse(0));
+            baritone.getItemUseHelper().request(hand, null,
+                    () -> process.isCurrentBehavior(this) && ctx.player().isFallFlying()
+                            && !this.landingMode && this.remainingSetBackTicks <= 0
+                            && this.remainingFireworkTicks <= 0 && isFireworks(ctx.player().getItemInHand(hand)),
+                    () -> {
+                        // Preserve the retry interval even when the controller rejects the use.
+                        this.remainingFireworkTicks = 10;
+                        InteractionResult result = ctx.playerController().processRightClick(ctx.player(), ctx.world(), hand);
+                        if (result instanceof InteractionResult.Success success) {
+                            if (success.swingSource() == InteractionResult.SwingSource.CLIENT) {
+                                ctx.player().swing(hand);
+                            }
+                            this.minimumBoostTicks = boostTicks;
+                            this.deployedFireworkLastTick = true;
+                        }
+                    });
         }
     }
 

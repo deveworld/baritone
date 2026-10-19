@@ -34,6 +34,7 @@ import baritone.selection.SelectionManager;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.GuiClick;
 import baritone.utils.InputOverrideHandler;
+import baritone.utils.ItemUseHelper;
 import baritone.utils.PathingControlManager;
 import baritone.utils.player.BaritonePlayerContext;
 import net.minecraft.client.Minecraft;
@@ -84,6 +85,7 @@ public class Baritone implements IBaritone {
 
     private final PathingBehavior pathingBehavior;
     private final LookBehavior lookBehavior;
+    private final ItemUseHelper itemUseHelper;
     private final InventoryBehavior inventoryBehavior;
     private final InputOverrideHandler inputOverrideHandler;
 
@@ -122,6 +124,7 @@ public class Baritone implements IBaritone {
 
         {
             this.lookBehavior         = this.registerBehavior(LookBehavior::new);
+            this.itemUseHelper        = this.registerBehavior(ItemUseHelper::new);
             this.pathingBehavior      = this.registerBehavior(PathingBehavior::new);
             this.inventoryBehavior    = this.registerBehavior(InventoryBehavior::new);
             this.inputOverrideHandler = this.registerBehavior(InputOverrideHandler::new);
@@ -171,6 +174,10 @@ public class Baritone implements IBaritone {
     @Override
     public InputOverrideHandler getInputOverrideHandler() {
         return this.inputOverrideHandler;
+    }
+
+    public ItemUseHelper getItemUseHelper() {
+        return this.itemUseHelper;
     }
 
     @Override

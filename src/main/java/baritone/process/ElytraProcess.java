@@ -118,6 +118,10 @@ public class ElytraProcess extends BaritoneProcessHelper implements IBaritonePro
         return this.behavior != null;
     }
 
+    public boolean isCurrentBehavior(ElytraBehavior expected) {
+        return this.behavior == expected;
+    }
+
     @Override
     public void resetState() {
         BlockPos destination = this.currentDestination();

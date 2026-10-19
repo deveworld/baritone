@@ -821,6 +821,12 @@ public final class Settings {
     public final Setting<Boolean> antiCheatCompatibility = new Setting<>(true);
 
     /**
+     * Log block interaction controller operations, rotations, targets and selected
+     * slots to the game log for diagnosing interaction problems.
+     */
+    public final Setting<Boolean> debugInteractions = new Setting<>(false);
+
+    /**
      * Exclusively use cached chunks for pathing
      * <p>
      * Never turn this on
