@@ -66,6 +66,8 @@ The recommended Java versions by Minecraft version are
 
 Download java: <https://adoptium.net/>
 
+Building the optimized distribution also requires the JDK's `jmods` directory. Temurin 25 omits it by default; download the matching `jmods` archive from the same Temurin release and extract its contents into `JAVA_HOME/jmods`. Verify that `JAVA_HOME/jmods/java.base.jmod` exists before building. See [Adoptium's JDK 25 release notes](https://adoptium.net/news/2025/09/eclipse-temurin-25-available).
+
 To check which java version you are using do `java -version` in a command prompt or terminal.
 
 ### Building Baritone
