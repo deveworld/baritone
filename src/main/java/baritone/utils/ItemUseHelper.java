@@ -37,13 +37,18 @@ import net.minecraft.world.phys.HitResult;
 
 import java.util.function.BooleanSupplier;
 
-/** Executes item uses after LookBehavior applies the current player's rotation. */
+/** Executes item uses after look is applied and before the player advances through physics. */
 public final class ItemUseHelper extends Behavior {
     private final PendingUse pending = new PendingUse();
     private int tick;
 
     public ItemUseHelper(Baritone baritone) {
         super(baritone);
+    }
+
+    /** A manual interaction owns the rest of this tick; do not replay an automated use. */
+    public void cancelForManualUse() {
+        pending.clear();
     }
 
     /**
@@ -104,7 +109,8 @@ public final class ItemUseHelper extends Behavior {
     @Override
     public void onPlayerUpdate(PlayerUpdateEvent event) {
         if (event.getState() == EventState.PRE) {
-            // Registered immediately after LookBehavior and before request producers.
+            // LookBehavior has applied rotation; both client and server still
+            // predict this interaction at the position preceding this tick's movement.
             pending.flush();
         }
     }

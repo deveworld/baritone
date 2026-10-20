@@ -83,6 +83,12 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
         this.inputForceStateMap.clear();
     }
 
+    /** Give a vanilla user interaction ownership of this tick's look and item use. */
+    public void onManualUseItem() {
+        baritone.getLookBehavior().onManualUseItem();
+        baritone.getItemUseHelper().cancelForManualUse();
+    }
+
     @Override
     public final void onTick(TickEvent event) {
         if (event.getType() == TickEvent.Type.OUT) {

@@ -842,7 +842,9 @@ public final class Settings {
      * Actually swim through water instead of bobbing along the bottom of it
      * <p>
      * Swimming works the same way it does for a player: hold sprint (ctrl) while in water to enter the swim
-     * state, then steer with yaw and pitch towards the goal. Since sprinting is what keeps the swim state
+     * state after the eye is underwater, then steer with yaw and pitch towards the goal. In deep water,
+     * baritone briefly sneaks to submerge before starting; shallow water retains normal wading.
+     * Since sprinting is what keeps the swim state
      * alive, this requires {@link #allowSprint} and enough hunger to sprint; without it, baritone falls back
      * to the normal walk-on-the-bottom behavior.
      * <p>

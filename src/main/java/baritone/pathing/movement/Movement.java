@@ -127,18 +127,22 @@ public abstract class Movement implements IMovement, MovementHelper {
         currentState = updateState(currentState);
         if (MovementHelper.isLiquid(ctx, ctx.playerFeet()) || ctx.player().isInWater()) {
             if (shouldSwim()) {
-                // sprint is what enters and keeps the swim state. vanilla only STARTS sprinting from
-                // the key while on the ground or eye-underwater, and actively cancels it at the water
-                // surface (which is exactly where we used to bob), so arm the flag ourselves.
-                // MixinEntity.allowSwimStart then latches the swim state this same tick instead of
-                // waiting for gravity to pull the eye under
-                currentState.setInput(Input.SPRINT, true);
-                ctx.player().setSprinting(true);
+                // Enter swimming through vanilla's real eye-immersion and sprint
+                // checks. Once swimming, vanilla can maintain it at the waterline.
+                boolean waitingForImmersion = !ctx.player().isSwimming() && !ctx.player().isUnderWater();
+                currentState.setInput(Input.SPRINT, !waitingForImmersion);
                 if (currentState.getStatus() == MovementStatus.RUNNING && ctx.player().isSwimming() && !ctx.player().onGround()) {
                     holdWaterline();
                     preTurnIntoTheBend();
+                } else if (waitingForImmersion && !ctx.player().onGround()
+                        && ctx.player().getAirSupply() >= ctx.player().getMaxAirSupply()
+                        && MovementHelper.isWater(BlockStateInterface.get(ctx, dest))) {
+                    // Sink with the normal sneak input instead of inventing a
+                    // swimming pose above water. Shallow bottoms and shore exits
+                    // retain the ordinary wading/jump fallback.
+                    currentState.setInput(Input.JUMP, false);
+                    currentState.setInput(Input.SNEAK, true);
                 } else if (!ctx.player().isSwimming() && ctx.player().onGround() && ctx.player().position().y < dest.y + 0.6) {
-                    // swim state hasn't latched yet and we're on the bottom: the old bob, for one tick
                     currentState.setInput(Input.JUMP, true);
                 }
             } else {

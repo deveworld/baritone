@@ -23,6 +23,7 @@ import baritone.api.event.events.PlayerUpdateEvent;
 import baritone.api.event.events.TickEvent;
 import baritone.api.event.events.WorldEvent;
 import baritone.api.event.events.type.EventState;
+import baritone.utils.InputOverrideHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -61,6 +62,17 @@ public class MixinMinecraft {
     )
     private void postInit(CallbackInfo ci) {
         BaritoneAPI.getProvider().getPrimaryBaritone();
+    }
+
+    @Inject(method = "startUseItem", at = @At("HEAD"))
+    private void onManualUseItem(CallbackInfo ci) {
+        if (this.player == null || this.level == null) {
+            return;
+        }
+        IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer(this.player);
+        if (baritone != null) {
+            ((InputOverrideHandler) baritone.getInputOverrideHandler()).onManualUseItem();
+        }
     }
 
     @Inject(

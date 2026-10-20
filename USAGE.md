@@ -97,7 +97,9 @@ There are about a hundred settings, but here are some fun / interesting / import
 
 To diagnose block interaction problems, enable `#debugInteractions true`, reproduce the problem, then disable it with `#debugInteractions false`. The client log records controller operations under `baritone.interactions`, including the player tick, effective and player rotations, selected hotbar slot, hit block and face, and operation result or cooldown. This diagnostic setting is disabled by default.
 
-Item-use diagnostics also include `item/queued`, `item/use`, `item/packet`, and `item/move`. Their `requestTick` identifies the same game tick across the request, applied-rotation execution, and outgoing packets. General item-use fallbacks and elytra fireworks run after the current rotation is applied; a pending use is discarded if its player, world, inventory, or required block face changes before execution.
+Item-use diagnostics also include `item/queued`, `item/use`, `item/packet`, and `item/move`. Their `requestTick` identifies the same game tick across the request, applied-rotation execution, and outgoing packets. General item-use fallbacks and elytra fireworks run after the current rotation is applied and before player physics moves the eye origin or collision box; a pending use is discarded if its player, world, inventory, or required block face changes before execution. A vanilla manual right-click takes priority for that tick: its exact direction is retained through movement, and the pending automated use is discarded.
+
+With `allowSwimming` enabled, swimming starts only after actual eye immersion. In deep water Baritone uses sneak to submerge first; shallow water and shore exits retain normal wading and jumping.
 
 ## Why doesn't Baritone respond to any of my chat commands?
 
