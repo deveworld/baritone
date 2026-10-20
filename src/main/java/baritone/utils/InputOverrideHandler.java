@@ -20,6 +20,7 @@ package baritone.utils;
 import baritone.Baritone;
 import baritone.api.BaritoneAPI;
 import baritone.api.event.events.TickEvent;
+import baritone.api.event.events.WorldEvent;
 import baritone.api.utils.IInputOverrideHandler;
 import baritone.api.utils.input.Input;
 import baritone.behavior.Behavior;
@@ -49,7 +50,7 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
     public InputOverrideHandler(Baritone baritone) {
         super(baritone);
         this.blockBreakHelper = new BlockBreakHelper(baritone.getPlayerContext());
-        this.blockPlaceHelper = new BlockPlaceHelper(baritone.getPlayerContext());
+        this.blockPlaceHelper = new BlockPlaceHelper(baritone.getPlayerContext(), baritone.getItemUseHelper());
     }
 
     /**
@@ -82,9 +83,16 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
         this.inputForceStateMap.clear();
     }
 
+    /** Give a vanilla user interaction ownership of this tick's look and item use. */
+    public void onManualUseItem() {
+        baritone.getLookBehavior().onManualUseItem();
+        baritone.getItemUseHelper().cancelForManualUse();
+    }
+
     @Override
     public final void onTick(TickEvent event) {
         if (event.getType() == TickEvent.Type.OUT) {
+            resetInteractions();
             return;
         }
         if (isInputForcedDown(Input.CLICK_LEFT)) {
@@ -104,6 +112,24 @@ public final class InputOverrideHandler extends Behavior implements IInputOverri
         }
         // only set it if it was previously incorrect
         // gotta do it this way, or else it constantly thinks you're beginning a double tap W sprint lol
+    }
+
+    @Override
+    public void onWorldEvent(WorldEvent event) {
+        resetInteractions();
+    }
+
+    @Override
+    public void onPlayerDeath() {
+        resetInteractions();
+    }
+
+    private void resetInteractions() {
+        // A replaced player/world must not inherit a held click or cooldown.
+        // Discard the old state without sending an abort through a new controller.
+        clearAllKeys();
+        blockBreakHelper.reset();
+        blockPlaceHelper.reset();
     }
 
     private boolean inControl() {

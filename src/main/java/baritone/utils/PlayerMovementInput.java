@@ -17,15 +17,16 @@
 
 package baritone.utils;
 
+import baritone.api.utils.IInputOverrideHandler;
 import baritone.api.utils.input.Input;
 import net.minecraft.client.player.ClientInput;
 import net.minecraft.world.phys.Vec2;
 
 public class PlayerMovementInput extends ClientInput {
 
-    private final InputOverrideHandler handler;
+    private final IInputOverrideHandler handler;
 
-    PlayerMovementInput(InputOverrideHandler handler) {
+    PlayerMovementInput(IInputOverrideHandler handler) {
         this.handler = handler;
     }
 
@@ -56,11 +57,8 @@ public class PlayerMovementInput extends ClientInput {
         }
 
         boolean sneaking = handler.isInputForcedDown(Input.SNEAK);
-        if (sneaking) {
-            leftImpulse *= 0.3D;
-            forwardImpulse *= 0.3D;
-        }
-        this.moveVector = new Vec2(leftImpulse, forwardImpulse);
+        // Match KeyboardInput; LocalPlayer applies sneak/item-use speed afterward.
+        this.moveVector = new Vec2(leftImpulse, forwardImpulse).normalized();
 
         boolean sprinting = handler.isInputForcedDown(Input.SPRINT);
 

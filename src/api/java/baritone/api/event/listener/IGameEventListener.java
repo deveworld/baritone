@@ -49,7 +49,9 @@ public interface IGameEventListener {
     void onPostTick(TickEvent event);
 
     /**
-     * Run once per game tick from before and after the player rotation is sent to the server.
+     * PRE runs before local player physics and its outgoing input/movement packets.
+     * POST runs after the level's entities have been updated, so other entities can
+     * observe the applied rotation before a free-look camera is restored.
      *
      * @param event The event
      * @see LocalPlayer#tick()

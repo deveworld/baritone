@@ -34,6 +34,7 @@ import baritone.selection.SelectionManager;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.GuiClick;
 import baritone.utils.InputOverrideHandler;
+import baritone.utils.ItemUseHelper;
 import baritone.utils.PathingControlManager;
 import baritone.utils.player.BaritonePlayerContext;
 import net.minecraft.client.Minecraft;
@@ -45,8 +46,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 /**
@@ -58,7 +61,21 @@ public class Baritone implements IBaritone {
     private static final ThreadPoolExecutor threadPool;
 
     static {
-        threadPool = new ThreadPoolExecutor(4, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
+        threadPool = new ThreadPoolExecutor(4, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), new ThreadFactory() {
+            private final AtomicInteger counter = new AtomicInteger();
+
+            @Override
+            public Thread newThread(Runnable runnable) {
+                Thread thread = new Thread(runnable, "Baritone-" + counter.incrementAndGet());
+                // Daemon, so the pool cannot keep the JVM alive once Minecraft.main has returned. With the default factory
+                // every worker is non-daemon and none of them ever exit: the core threads (corePoolSize 4, and
+                // allowCoreThreadTimeOut is never set) park in take() for the life of the JVM whether or not they have
+                // work, and two of them are permanently busy anyway with CachedWorld's chunk packer and its ten-minute
+                // save loop. Left as they were, the client sat in shutdown until ClientShutdownWatchdog killed it.
+                thread.setDaemon(true);
+                return thread;
+            }
+        });
     }
 
     private final Minecraft mc;
@@ -68,6 +85,7 @@ public class Baritone implements IBaritone {
 
     private final PathingBehavior pathingBehavior;
     private final LookBehavior lookBehavior;
+    private final ItemUseHelper itemUseHelper;
     private final InventoryBehavior inventoryBehavior;
     private final InputOverrideHandler inputOverrideHandler;
 
@@ -106,6 +124,7 @@ public class Baritone implements IBaritone {
 
         {
             this.lookBehavior         = this.registerBehavior(LookBehavior::new);
+            this.itemUseHelper        = this.registerBehavior(ItemUseHelper::new);
             this.pathingBehavior      = this.registerBehavior(PathingBehavior::new);
             this.inventoryBehavior    = this.registerBehavior(InventoryBehavior::new);
             this.inputOverrideHandler = this.registerBehavior(InputOverrideHandler::new);
@@ -155,6 +174,10 @@ public class Baritone implements IBaritone {
     @Override
     public InputOverrideHandler getInputOverrideHandler() {
         return this.inputOverrideHandler;
+    }
+
+    public ItemUseHelper getItemUseHelper() {
+        return this.itemUseHelper;
     }
 
     @Override

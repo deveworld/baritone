@@ -286,7 +286,7 @@ public final class Settings {
      * <p>
      * If a schematic asks for a block on this mapping, all blocks on the mapped list will be accepted at that location as well
      * <p>
-     * Syntax same as <a href="https://baritone.leijurv.com/baritone/api/Settings.html#buildSubstitutes">buildSubstitutes</a>
+     * Syntax same as {@link #buildSubstitutes}
      */
     public final Setting<Map<Block, List<Block>>> buildValidSubstitutes = new Setting<>(new HashMap<>());
 
@@ -377,6 +377,30 @@ public final class Settings {
      * Sprint and jump a block early on ascends wherever possible
      */
     public final Setting<Boolean> sprintAscends = new Setting<>(true);
+
+    /**
+     * Sprint jump in 1x2 corridors and whenever walking under a low ceiling, bonking our head on it.
+     * <p>
+     * The sprint jump speed boost applies before we hit the ceiling, making this faster than just sprinting.
+     */
+    public final Setting<Boolean> headHitters = new Setting<>(false);
+
+    /**
+     * Also sprint jump under low ceilings on flat diagonal movements when {@link #headHitters} is enabled.
+     * Enabled by default. Disable this to limit head hitters to straight movements.
+     */
+    public final Setting<Boolean> headHittersDiagonal = new Setting<>(true);
+
+    /**
+     * Sprint jump along straight stretches of path, up single block steps and down small hills. Every jump is simulated
+     * first and only happens if it lands back on the path without fall damage.
+     */
+    public final Setting<Boolean> sprintJumping = new Setting<>(false);
+
+    /**
+     * Also sprint jump along flat diagonal stretches of path when {@link #sprintJumping} is enabled.
+     */
+    public final Setting<Boolean> sprintJumpingDiagonals = new Setting<>(true);
 
     /**
      * If we overshoot a traverse and end up one block beyond the destination, mark it as successful anyway.
@@ -796,6 +820,12 @@ public final class Settings {
     public final Setting<Boolean> antiCheatCompatibility = new Setting<>(true);
 
     /**
+     * Log block interaction controller operations, rotations, targets and selected
+     * slots to the game log for diagnosing interaction problems.
+     */
+    public final Setting<Boolean> debugInteractions = new Setting<>(false);
+
+    /**
      * Exclusively use cached chunks for pathing
      * <p>
      * Never turn this on
@@ -806,6 +836,21 @@ public final class Settings {
      * Continue sprinting while in water
      */
     public final Setting<Boolean> sprintInWater = new Setting<>(true);
+
+    /**
+     * Actually swim through water instead of bobbing along the bottom of it
+     * <p>
+     * Swimming works the same way it does for a player: hold sprint (ctrl) while in water to enter the swim
+     * state after the eye is underwater, then steer with yaw and pitch towards the goal. In deep water,
+     * baritone briefly sneaks to submerge before starting; shallow water retains normal wading.
+     * Since sprinting is what keeps the swim state
+     * alive, this requires {@link #allowSprint} and enough hunger to sprint; without it, baritone falls back
+     * to the normal walk-on-the-bottom behavior.
+     * <p>
+     * Water traversal is also costed at swim speed when this is on, unless depth strider makes walking the
+     * bottom the faster option.
+     */
+    public final Setting<Boolean> allowSwimming = new Setting<>(false);
 
     /**
      * When GetToBlockProcess or MineProcess fails to calculate a path, instead of just giving up, mark the closest instance
@@ -994,6 +1039,12 @@ public final class Settings {
      * Farming will scan for at most this many blocks.
      */
     public final Setting<Integer> farmMaxScanSize = new Setting<>(256);
+
+    /**
+     * Keep the farm process active when crops are present but none are mature
+     * enough to harvest yet. Disabled by default to preserve legacy behavior.
+     */
+    public final Setting<Boolean> farmWaitForGrowth = new Setting<>(false);
 
     /**
      * When the cache scan gives less blocks than the maximum threshold (but still above zero), scan the main world too.
@@ -1547,10 +1598,6 @@ public final class Settings {
      */
     public final Setting<Boolean> elytraChatSpam = new Setting<>(false);
 
-    /**
-     * May reduce memory usage by using a custom allocator for pathfinding
-     */
-    public final Setting<Boolean> elytraCustomAllocator = new Setting<>(true);
 
     /**
      * Allow the pathfinder to attempt flight in tighter spaces, useful in caves but can be dangerous.

@@ -48,7 +48,7 @@ Commands in Baritone:
 - `build` to build a schematic. `build blah.schematic` will load `schematics/blah.schematic` and build it with the origin being your player feet. `build blah.schematic x y z` to set the origin. Any of those can be relative to your player (`~ 69 ~-420` would build at x=player x, y=69, z=player z-420).
 - `schematica` to build the schematic that is currently open in schematica
 - `tunnel` to dig and make a tunnel, 1x2. It will only deviate from the straight line if necessary such as to avoid lava. For a dumber tunnel that is really just cleararea, you can `tunnel 3 2 100`, to clear an area 3 high, 2 wide, and 100 deep.
-- `farm` to automatically harvest, replant, or bone meal crops. Use `farm <range>` or `farm <range> <waypoint>` to limit the max distance from the starting point or a waypoint.
+- `farm` to automatically harvest, replant, or bone meal crops. Use `farm <range>` or `farm <range> <waypoint>` to limit the max distance from the starting point or a waypoint. Set `farmWaitForGrowth` to `true` to keep farming active while nearby crops are immature.
 - `axis` to go to an axis or diagonal axis at y=120 (`axisHeight` is a configurable setting, defaults to 120).
 - `explore x z` to explore the world from the origin of x,z. Leave out x and z to default to player feet. This will continually path towards the closest chunk to the origin that it's never seen before. `explorefilter filter.json` with optional invert can be used to load in a list of chunks to load.
 - `invert` to invert the current goal and path. This gets as far away from it as possible, instead of as close as possible. For example, do `goal` then `invert` to run as far as possible from where you're standing at the start.
@@ -74,6 +74,11 @@ There are about a hundred settings, but here are some fun / interesting / import
 - `allowPlace`
 - `allowParkour`
 - `allowParkourPlace`
+- `headHitters` (sprint jump head bonks in 1x2 tunnels, slightly faster than plain sprinting)
+- `headHittersDiagonal` (on by default, allows diagonal head bonks when `headHitters` is enabled)
+- `sprintJumping` (sprint jump along straight path stretches, up single steps and down small hills)
+- `sprintJumpingDiagonals` (on by default, allows diagonal sprint jumps when `sprintJumping` is enabled)
+- `allowSwimming` (sprint swim along the waterline, head out and body in, instead of bobbing through water)
 - `blockPlacementPenalty`
 - `renderCachedChunks` (and `cachedChunksOpacity`) <-- very fun but you need a beefy computer
 - `avoidance` (avoidance of mobs / mob spawners)
@@ -89,6 +94,12 @@ There are about a hundred settings, but here are some fun / interesting / import
 - `allowDiagonalAscend`
 
 # Troubleshooting / common issues
+
+To diagnose block interaction problems, enable `#debugInteractions true`, reproduce the problem, then disable it with `#debugInteractions false`. The client log records controller operations under `baritone.interactions`, including the player tick, effective and player rotations, selected hotbar slot, hit block and face, and operation result or cooldown. This diagnostic setting is disabled by default.
+
+Item-use diagnostics also include `item/queued`, `item/use`, `item/packet`, and `item/move`. Their `requestTick` identifies the same game tick across the request, applied-rotation execution, and outgoing packets. General item-use fallbacks and elytra fireworks run after the current rotation is applied and before player physics moves the eye origin or collision box; a pending use is discarded if its player, world, inventory, or required block face changes before execution. A vanilla manual right-click takes priority for that tick: its exact direction is retained through movement, and the pending automated use is discarded.
+
+With `allowSwimming` enabled, swimming starts only after actual eye immersion. In deep water Baritone uses sneak to submerge first; shallow water and shore exits retain normal wading and jumping.
 
 ## Why doesn't Baritone respond to any of my chat commands?
 

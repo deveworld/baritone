@@ -64,10 +64,12 @@ public class MixinClientPlayerEntity {
             at = @At(
                     value = "INVOKE",
                     target = "net/minecraft/client/player/AbstractClientPlayer.tick()V",
-                    shift = At.Shift.AFTER
+                    shift = At.Shift.BEFORE
             )
     )
     private void onPreUpdate(CallbackInfo ci) {
+        // Apply rotation and finish queued interactions before local physics
+        // changes the eye origin or collision box, matching vanilla's use phase.
         IBaritone baritone = BaritoneAPI.getProvider().getBaritoneForPlayer((LocalPlayer) (Object) this);
         if (baritone != null) {
             baritone.getGameEventHandler().onPlayerUpdate(new PlayerUpdateEvent(EventState.PRE));
